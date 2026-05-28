@@ -22,8 +22,26 @@ export class AuthController {
     next: NextFunction,
   ) => {
     try {
-      const data = await AuthService.loginWithEmailAndPassword(req.body);
-      return ApiResponse.success(res, 'Login successful', data);
+      const { user, tokens } = await AuthService.loginWithEmailAndPassword(req.body);
+
+      const cookieOptions = {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax' as const,
+      };
+
+      // Set Access Token (15 minutes)
+      res.cookie('accessToken', tokens.accessToken, {
+        ...cookieOptions,
+        maxAge: 15 * 60 * 1000,
+      });
+      // Set Refresh Token (7 days)
+      res.cookie('refreshToken', tokens.refreshToken, {
+        ...cookieOptions,
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      });
+
+      return ApiResponse.success(res, 'Login successful', { user });
     } catch (error) {
       next(error);
     }
@@ -31,8 +49,29 @@ export class AuthController {
 
   public static refreshToken = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const tokens = await AuthService.refreshToken(req.body);
-      return ApiResponse.success(res, 'Token refreshed successfully', tokens);
+      // 1. Read token from COOKIES, not body!
+      const oldRefreshToken = req.cookies.refreshToken;
+      if (!oldRefreshToken) throw new Error("No refresh token found in cookies");
+
+      const tokens = await AuthService.refreshToken({ refreshToken: oldRefreshToken });
+
+      const cookieOptions = {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax' as const,
+      };
+
+      // 2. Set the NEW cookies
+      res.cookie('accessToken', tokens.accessToken, {
+        ...cookieOptions,
+        maxAge: 15 * 60 * 1000,
+      });
+      res.cookie('refreshToken', tokens.refreshToken, {
+        ...cookieOptions,
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      });
+
+      return ApiResponse.success(res, 'Token refreshed successfully', null);
     } catch (error) {
       next(error);
     }
@@ -42,6 +81,10 @@ export class AuthController {
     try {
       const userId = res.locals.user.id;
       await AuthService.logout(userId);
+
+      // Clear the cookies to officially log the user out!
+      res.clearCookie('accessToken');
+      res.clearCookie('refreshToken');
 
       return ApiResponse.success(res, 'Logged out successfully', null);
     } catch (error) {
