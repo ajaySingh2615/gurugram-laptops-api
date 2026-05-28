@@ -8,6 +8,7 @@ export const env = {
   DATABASE_URL: process.env.DATABASE_URL as string,
   JWT_ACCESS_SECRET: process.env.JWT_ACCESS_SECRET as string,
   JWT_REFRESH_SECRET: process.env.JWT_REFRESH_SECRET as string,
+  RESEND_API_KEY: process.env.RESEND_API_KEY as string,
 };
 
 if (!env.DATABASE_URL) {
