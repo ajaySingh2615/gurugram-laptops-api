@@ -24,7 +24,7 @@ router.get('/me', requireAuth, (req, res) => {
   });
 });
 
-router.post('/refresh-token', validateRequest(refreshTokenSchema), AuthController.refreshToken);
+router.post('/refresh-token', AuthController.refreshToken);
 
 router.post('/logout', requireAuth, AuthController.logout);
 
