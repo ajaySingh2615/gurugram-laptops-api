@@ -3,6 +3,7 @@ import { AuthController } from './auth.controller.js';
 import { validateRequest } from '../../common/middlewares/validate-request.js';
 import { loginSchema, refreshTokenSchema, registerSchema } from './dto/auth.dto.js';
 import { requireAuth } from './middlewares/auth.middleware.js';
+import { UserRepository } from './user.repository.js';
 
 const router = Router();
 
@@ -14,13 +15,22 @@ router.post(
 
 router.post('/login', validateRequest(loginSchema), AuthController.loginWithEmailAndPassword);
 
-router.get('/me', requireAuth, (req, res) => {
+router.get('/me', requireAuth, async (req, res) => {
   const userId = res.locals.user.id;
+  const user = await UserRepository.findUserById(userId);
+
+  if (!user) {
+    return res.status(404).json({ success: false, message: 'User not found' });
+  }
 
   res.json({
     success: true,
     message: 'you have accessed the VIP area',
-    userId: userId,
+    userId: user.id,
+    fullName: user.fullName,
+    email: user.email,
+    role: user.role,
+    status: user.status
   });
 });
 
