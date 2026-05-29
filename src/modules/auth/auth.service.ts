@@ -40,6 +40,10 @@ export class AuthService {
       throw ApiError.unauthorized('Invalid email or password');
     }
 
+    if (user.status === 'BANNED') {
+      throw new ApiError(403, 'Your account has been banned. Please contact support.');
+    }
+
     const isPasswordValid = await PasswordUtil.compare(data.password, user.password);
 
     if (!isPasswordValid) {
