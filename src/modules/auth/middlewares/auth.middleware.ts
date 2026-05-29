@@ -27,3 +27,13 @@ export const requireAuth = (req: Request, res: Response, next: NextFunction) => 
     next(ApiError.unauthorized('Invalid or expired token.'));
   }
 };
+
+export const requireRole = (roles: string[]) => {
+  return (req: Request, res: Response, next: NextFunction) => {
+    const userRole = res.locals.user?.role;
+    if (!userRole || !roles.includes(userRole)) {
+      return next(ApiError.forbidden('Access denied. Insufficient permissions.'));
+    }
+    next();
+  };
+};

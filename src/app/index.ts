@@ -7,6 +7,7 @@ import { ApiError } from '../common/exceptions/api-error.js';
 import { globalErrorHandler } from '../common/middlewares/error-handler.js';
 import { authRoutes } from '../modules/auth/auth.routes.js';
 import { adminRoutes } from '../modules/admin/admin.routes.js';
+import { productRoutes } from '../modules/products/product.routes.js';
 
 export const buildApp = (): Application => {
   const app = express();
@@ -25,6 +26,7 @@ export const buildApp = (): Application => {
   app.use('/api/v1/health', healthRoutes);
   app.use('/api/v1/auth', authRoutes);
   app.use('/api/v1/admin', adminRoutes);
+  app.use('/api/v1/products', productRoutes);
 
   app.use((req, res, next) => {
     next(ApiError.notFound(`Route not found: ${req.originalUrl}`));

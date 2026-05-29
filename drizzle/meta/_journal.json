@@ -15,6 +15,13 @@
       "when": 1780070695682,
       "tag": "0001_oval_lord_hawal",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1780080296121,
+      "tag": "0002_third_squadron_supreme",
+      "breakpoints": true
     }
   ]
 }
