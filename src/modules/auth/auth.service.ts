@@ -46,8 +46,8 @@ export class AuthService {
       throw ApiError.unauthorized('Invalid email or password');
     }
 
-    const accessToken = JwtUtil.generateAccessToken(user.id);
-    const refreshToken = JwtUtil.generateRefreshToken(user.id);
+    const accessToken = JwtUtil.generateAccessToken(user.id, user.role || 'USER');
+    const refreshToken = JwtUtil.generateRefreshToken(user.id, user.role || 'USER');
 
     await UserRepository.updateUser(user.id, { refreshToken, updatedAt: new Date() });
 
@@ -81,8 +81,8 @@ export class AuthService {
     }
 
     // Generate new tokens (This is called Refresh Token Rotation)
-    const newAccessToken = JwtUtil.generateAccessToken(user.id);
-    const newRefreshToken = JwtUtil.generateRefreshToken(user.id);
+    const newAccessToken = JwtUtil.generateAccessToken(user.id, user.role || 'USER');
+    const newRefreshToken = JwtUtil.generateRefreshToken(user.id, user.role || 'USER');
 
     // save the new token in the DB
     await UserRepository.updateUser(user.id, {

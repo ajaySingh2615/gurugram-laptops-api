@@ -8,6 +8,13 @@
       "when": 1779882649801,
       "tag": "0000_goofy_vindicator",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1780070695682,
+      "tag": "0001_oval_lord_hawal",
+      "breakpoints": true
     }
   ]
 }

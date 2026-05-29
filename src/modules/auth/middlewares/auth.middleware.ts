@@ -14,11 +14,11 @@ export const requireAuth = (req: Request, res: Response, next: NextFunction) => 
       throw ApiError.unauthorized('Access denied. No token provided');
     }
 
-    // 4. Verify the token using our secret
-    const decoded = jwt.verify(token, env.JWT_ACCESS_SECRET) as unknown as { userId: string };
+    // 4. Verify the token signature and expiration
+    const decoded = jwt.verify(token, env.JWT_ACCESS_SECRET) as unknown as { userId: string; role: string };
 
     // 5. Attach the payload to `res.locals` so the Controller can read it!
-    res.locals.user = { id: decoded.userId };
+    res.locals.user = { id: decoded.userId, role: decoded.role };
 
     // 6. Move to the next middleware or controller
     next();

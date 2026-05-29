@@ -45,4 +45,16 @@ export class UserRepository {
     const result = await db.select().from(users).where(eq(users.resetPasswordToken, token));
     return result.length > 0 ? result[0] : null;
   }
+
+  public static async getAllUsers() {
+    return await db.select({
+      id: users.id,
+      fullName: users.fullName,
+      email: users.email,
+      role: users.role,
+      status: users.status,
+      isEmailVerified: users.isEmailVerified,
+      createdAt: users.createdAt,
+    }).from(users);
+  }
 }
