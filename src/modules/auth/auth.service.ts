@@ -3,6 +3,8 @@ import type { LoginDto, RefreshTokenDto, RegisterDto } from './dto/auth.dto.js';
 import { UserRepository } from './user.repository.js';
 import { PasswordUtil } from '../../common/utils/password.util.js';
 import { JwtUtil } from '../../common/utils/jwt.util.js';
+import crypto from 'crypto';
+import { EmailUtil } from '../../common/utils/email.util.js';
 
 export class AuthService {
   public static async createUserWithEmailAndPassword(data: RegisterDto) {
@@ -13,11 +15,16 @@ export class AuthService {
     }
 
     const hashedPassword = await PasswordUtil.hash(data.password);
+    const emailVerificationToken = crypto.randomBytes(32).toString('hex');
 
     const newUser = await UserRepository.insertUser({
       ...data,
       password: hashedPassword,
+      emailVerificationToken,
     });
+
+    // Send the verification email in the background
+    EmailUtil.sendVerificationEmail(data.email, emailVerificationToken).catch(console.error);
 
     return {
       id: newUser?.id,
@@ -93,6 +100,60 @@ export class AuthService {
     // We just wipe the refresh token from the database!
     await UserRepository.updateUser(userId, {
       refreshToken: null,
+      updatedAt: new Date(),
+    });
+
+    return true;
+  }
+
+  public static async verifyEmail(token: string) {
+    const user = await UserRepository.findUserByVerificationToken(token);
+    if (!user) throw new ApiError(400, 'Invalid or expired verification token');
+
+    await UserRepository.updateUser(user.id, {
+      isEmailVerified: true,
+      emailVerificationToken: null, // Clear the token so it can't be reused
+      updatedAt: new Date(),
+    });
+
+    return true;
+  }
+
+  public static async forgotPassword(email: string) {
+    const user = await UserRepository.findUserByEmail(email);
+    if (!user) {
+      // For security, don't reveal if a user exists or not. Just return silently.
+      return true;
+    }
+
+    const resetPasswordToken = crypto.randomBytes(32).toString('hex');
+    const resetPasswordTokenExpires = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+
+    await UserRepository.updateUser(user.id, {
+      resetPasswordToken,
+      resetPasswordTokenExpires,
+      updatedAt: new Date(),
+    });
+
+    // Send the email
+    EmailUtil.sendPasswordResetEmail(email, resetPasswordToken).catch(console.error);
+    return true;
+  }
+
+  public static async resetPassword(token: string, newPassword: string) {
+    const user = await UserRepository.findUserByResetToken(token);
+    
+    // Check if token exists and hasn't expired
+    if (!user || !user.resetPasswordTokenExpires || user.resetPasswordTokenExpires < new Date()) {
+      throw new ApiError(400, 'Invalid or expired password reset token');
+    }
+
+    const hashedPassword = await PasswordUtil.hash(newPassword);
+
+    await UserRepository.updateUser(user.id, {
+      password: hashedPassword,
+      resetPasswordToken: null, // Clear token
+      resetPasswordTokenExpires: null,
       updatedAt: new Date(),
     });
 

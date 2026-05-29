@@ -25,7 +25,10 @@ router.get('/me', requireAuth, (req, res) => {
 });
 
 router.post('/refresh-token', AuthController.refreshToken);
-
 router.post('/logout', requireAuth, AuthController.logout);
+
+router.post('/verify-email', AuthController.verifyEmail);
+router.post('/forgot-password', AuthController.forgotPassword);
+router.post('/reset-password', AuthController.resetPassword);
 
 export const authRoutes: Router = router;

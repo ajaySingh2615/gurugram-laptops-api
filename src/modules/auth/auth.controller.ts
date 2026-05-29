@@ -91,4 +91,37 @@ export class AuthController {
       next(error);
     }
   };
+
+  public static verifyEmail = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { token } = req.body;
+      if (!token) throw new Error("Token is required");
+      await AuthService.verifyEmail(token);
+      return ApiResponse.success(res, 'Email verified successfully', null);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  public static forgotPassword = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { email } = req.body;
+      if (!email) throw new Error("Email is required");
+      await AuthService.forgotPassword(email);
+      return ApiResponse.success(res, 'If an account exists, a reset link was sent', null);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  public static resetPassword = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { token, newPassword } = req.body;
+      if (!token || !newPassword) throw new Error("Token and new password are required");
+      await AuthService.resetPassword(token, newPassword);
+      return ApiResponse.success(res, 'Password reset successfully', null);
+    } catch (error) {
+      next(error);
+    }
+  };
 }
