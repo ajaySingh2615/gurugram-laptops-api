@@ -9,13 +9,16 @@ export class UserRepository {
     return result.length > 0 ? result[0] : null;
   }
 
-  public static async insertUser(data: RegisterDto & { password: string }) {
+  public static async insertUser(
+    data: RegisterDto & { password: string; emailVerificationToken?: string },
+  ) {
     const [newUser] = await db
       .insert(users)
       .values({
         fullName: data.fullName,
         email: data.email,
         password: data.password,
+        emailVerificationToken: data.emailVerificationToken,
       })
       .returning();
 
@@ -30,6 +33,16 @@ export class UserRepository {
 
   public static async findUserById(id: string) {
     const result = await db.select().from(users).where(eq(users.id, id));
+    return result.length > 0 ? result[0] : null;
+  }
+
+  public static async findUserByVerificationToken(token: string) {
+    const result = await db.select().from(users).where(eq(users.emailVerificationToken, token));
+    return result.length > 0 ? result[0] : null;
+  }
+
+  public static async findUserByResetToken(token: string) {
+    const result = await db.select().from(users).where(eq(users.resetPasswordToken, token));
     return result.length > 0 ? result[0] : null;
   }
 }
