@@ -4,7 +4,7 @@ import { cartService } from './cart.service.js';
 export class CartController {
   async getCart(req: Request, res: Response, next: NextFunction) {
     try {
-      const userId = req.user!.id;
+      const userId = res.locals.user.id;
       const cart = await cartService.getCart(userId);
       res.status(200).json({ success: true, data: cart });
     } catch (error) {
@@ -14,7 +14,7 @@ export class CartController {
 
   async addItem(req: Request, res: Response, next: NextFunction) {
     try {
-      const userId = req.user!.id;
+      const userId = res.locals.user.id;
       const item = await cartService.addItem(userId, req.body);
       res.status(201).json({ success: true, data: item });
     } catch (error) {
@@ -24,10 +24,10 @@ export class CartController {
 
   async updateQuantity(req: Request, res: Response, next: NextFunction) {
     try {
-      const userId = req.user!.id;
+      const userId = res.locals.user.id;
       const { id } = req.params;
       const { quantity } = req.body;
-      const item = await cartService.updateQuantity(userId, id, quantity);
+      const item = await cartService.updateQuantity(userId, id as string, quantity);
       res.status(200).json({ success: true, data: item });
     } catch (error) {
       next(error);
@@ -36,9 +36,9 @@ export class CartController {
 
   async removeItem(req: Request, res: Response, next: NextFunction) {
     try {
-      const userId = req.user!.id;
+      const userId = res.locals.user.id;
       const { id } = req.params;
-      await cartService.removeItem(userId, id);
+      await cartService.removeItem(userId, id as string);
       res.status(200).json({ success: true, message: 'Item removed' });
     } catch (error) {
       next(error);
@@ -47,7 +47,7 @@ export class CartController {
 
   async syncCart(req: Request, res: Response, next: NextFunction) {
     try {
-      const userId = req.user!.id;
+      const userId = res.locals.user.id;
       const { items } = req.body;
       if (!Array.isArray(items)) {
         res.status(400).json({ success: false, message: 'Items array required' });

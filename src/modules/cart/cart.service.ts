@@ -8,7 +8,7 @@ export class CartService {
 
   async addItem(userId: string, data: { productId: string; quantity: number; variantName?: string }) {
     const cart = await cartRepository.getOrCreateCart(userId);
-    return await cartRepository.addItemToCart(cart.id, data.productId, data.quantity, data.variantName || null);
+    return await cartRepository.addItemToCart(cart!.id, data.productId, data.quantity, data.variantName || null);
   }
 
   async updateQuantity(userId: string, cartItemId: string, quantity: number) {
@@ -36,7 +36,7 @@ export class CartService {
   async syncCart(userId: string, localItems: Array<{ productId: string; quantity: number; variantName?: string }>) {
     const cart = await cartRepository.getOrCreateCart(userId);
     for (const item of localItems) {
-      await cartRepository.addItemToCart(cart.id, item.productId, item.quantity, item.variantName || null);
+      await cartRepository.addItemToCart(cart!.id, item.productId, item.quantity, item.variantName || null);
     }
     return await cartRepository.getCartByUserId(userId);
   }

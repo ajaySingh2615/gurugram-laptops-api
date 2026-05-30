@@ -1,6 +1,7 @@
 import type { Request, Response, NextFunction } from 'express';
 import { AuthService } from './auth.service.js';
 import { ApiResponse } from '../../common/utils/api-response.js';
+import { ApiError } from '../../common/exceptions/api-error.js';
 
 export class AuthController {
   public static createUserWithEmailAndPassword = async (
@@ -51,7 +52,7 @@ export class AuthController {
     try {
       // 1. Read token from COOKIES, not body!
       const oldRefreshToken = req.cookies.refreshToken;
-      if (!oldRefreshToken) throw new Error("No refresh token found in cookies");
+      if (!oldRefreshToken) throw ApiError.unauthorized("No refresh token found in cookies");
 
       const tokens = await AuthService.refreshToken({ refreshToken: oldRefreshToken });
 
