@@ -11,6 +11,7 @@ import { productRoutes } from '../modules/products/product.routes.js';
 import { uploadRoutes } from '../modules/upload/upload.routes.js';
 import { categoryRoutes } from '../modules/categories/category.routes.js';
 import { cartRoutes } from '../modules/cart/cart.routes.js';
+import { orderRoutes } from '../modules/orders/order.routes.js';
 
 export const buildApp = (): Application => {
   const app = express();
@@ -33,6 +34,7 @@ export const buildApp = (): Application => {
   app.use('/api/v1/upload', uploadRoutes);
   app.use('/api/v1/categories', categoryRoutes);
   app.use('/api/v1/cart', cartRoutes);
+  app.use('/api/v1/orders', orderRoutes);
 
   app.use((req, res, next) => {
     next(ApiError.notFound(`Route not found: ${req.originalUrl}`));
