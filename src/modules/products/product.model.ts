@@ -9,7 +9,7 @@ export const products = pgTable('products', {
   subcategory: varchar('subcategory', { length: 100 }).notNull(),
   isRefurbished: boolean('is_refurbished').default(false).notNull(),
   
-  image: varchar('image', { length: 1000 }).notNull(),
+  images: jsonb('images').$type<string[]>().default([]).notNull(),
   
   basePrice: integer('base_price').notNull().default(0),
   originalBasePrice: integer('original_base_price').notNull().default(0),

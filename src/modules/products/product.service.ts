@@ -15,7 +15,7 @@ export class ProductService {
       category: data.category,
       subcategory: data.subcategory || '',
       isRefurbished: data.isRefurbished || false,
-      image: data.image || '',
+      images: data.images || [],
       basePrice: data.basePrice || 0,
       originalBasePrice: data.originalBasePrice || 0,
       inStock: data.inStock !== false,
