@@ -45,6 +45,43 @@ export class ProductRepository {
       variants,
     };
   }
+
+  async updateProduct(id: string, productData: Partial<typeof products.$inferInsert>, variantsData: typeof productVariants.$inferInsert[]) {
+    return await db.transaction(async (tx) => {
+      // 1. Update base product
+      const [updatedProduct] = await tx.update(products)
+        .set({ ...productData, updatedAt: new Date() })
+        .where(eq(products.id, id))
+        .returning();
+
+      if (!updatedProduct) {
+        throw new Error("Product not found");
+      }
+
+      // 2. Delete existing variants
+      await tx.delete(productVariants).where(eq(productVariants.productId, id));
+
+      // 3. Insert new variants if any
+      let createdVariants: typeof productVariants.$inferSelect[] = [];
+      if (productData.enableVariants !== false && variantsData && variantsData.length > 0) {
+        const variantsToInsert = variantsData.map(v => ({
+          ...v,
+          productId: id,
+        }));
+        createdVariants = await tx.insert(productVariants).values(variantsToInsert).returning();
+      }
+
+      return {
+        ...updatedProduct,
+        variants: createdVariants,
+      };
+    });
+  }
+
+  async deleteProduct(id: string) {
+    const [deleted] = await db.delete(products).where(eq(products.id, id)).returning();
+    return deleted;
+  }
 }
 
 export const productRepository = new ProductRepository();
