@@ -9,6 +9,9 @@ export const env = {
   JWT_ACCESS_SECRET: process.env.JWT_ACCESS_SECRET as string,
   JWT_REFRESH_SECRET: process.env.JWT_REFRESH_SECRET as string,
   RESEND_API_KEY: process.env.RESEND_API_KEY as string,
+  CLOUDINARY_CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME as string,
+  CLOUDINARY_API_KEY: process.env.CLOUDINARY_API_KEY as string,
+  CLOUDINARY_API_SECRET: process.env.CLOUDINARY_API_SECRET as string,
 };
 
 if (!env.DATABASE_URL) {
