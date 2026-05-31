@@ -2,29 +2,36 @@ import { db } from '../../common/config/db.js';
 import { orders, orderItems } from './order.model.js';
 import { cartItems } from '../cart/cart.model.js';
 import { eq, desc } from 'drizzle-orm';
-import { ApiError } from '../../common/exceptions/api-error.js';
 
 export class OrderRepository {
   async createOrderWithItems(
     userId: string,
     totalAmount: string,
     shippingAddress: any,
-    items: Array<{ productId: string; variantName: string | null; quantity: number; price: number }>,
-    cartIdToClear?: string
+    items: Array<{
+      productId: string;
+      variantName: string | null;
+      quantity: number;
+      price: number;
+    }>,
+    cartIdToClear?: string,
   ) {
     return await db.transaction(async (tx) => {
       // 1. Create the order
-      const [newOrder] = await tx.insert(orders).values({
-        userId,
-        totalAmount,
-        shippingAddress,
-        paymentMethod: 'COD',
-        status: 'PENDING',
-      }).returning();
+      const [newOrder] = await tx
+        .insert(orders)
+        .values({
+          userId,
+          totalAmount,
+          shippingAddress,
+          paymentMethod: 'COD',
+          status: 'PENDING',
+        })
+        .returning();
 
       // 2. Create the order items
       if (items.length > 0) {
-        const orderItemsToInsert = items.map(item => ({
+        const orderItemsToInsert = items.map((item) => ({
           orderId: newOrder!.id,
           productId: item.productId,
           variantName: item.variantName,
@@ -49,12 +56,12 @@ export class OrderRepository {
       with: {
         items: {
           with: {
-            product: true
-          }
+            product: true,
+          },
         },
-        user: true
+        user: true,
       },
-      orderBy: [desc(orders.createdAt)]
+      orderBy: [desc(orders.createdAt)],
     });
   }
 
@@ -63,17 +70,18 @@ export class OrderRepository {
       with: {
         items: {
           with: {
-            product: true
-          }
+            product: true,
+          },
         },
-        user: true
+        user: true,
       },
-      orderBy: [desc(orders.createdAt)]
+      orderBy: [desc(orders.createdAt)],
     });
   }
 
   async updateOrderStatus(orderId: string, status: string) {
-    const [updated] = await db.update(orders)
+    const [updated] = await db
+      .update(orders)
       .set({ status, updatedAt: new Date() })
       .where(eq(orders.id, orderId))
       .returning();

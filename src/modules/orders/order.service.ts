@@ -1,5 +1,7 @@
 import { orderRepository } from './order.repository.js';
 import { cartRepository } from '../cart/cart.repository.js';
+import { UserRepository } from '../auth/user.repository.js';
+import { EmailUtil } from '../../common/utils/email.util.js';
 import { ApiError } from '../../common/exceptions/api-error.js';
 
 export class OrderService {
@@ -46,6 +48,32 @@ export class OrderService {
       orderItemsToInsert,
       cart.id
     );
+
+    // 4. Send Order Confirmation Email asynchronously
+    try {
+      const user = await UserRepository.findUserById(userId);
+      if (user && user.email) {
+        // Prepare items array for email
+        const emailItems = cart.items.map(item => ({
+          productName: item.product?.title || 'Unknown Product',
+          variantName: item.variantName,
+          quantity: item.quantity,
+          price: orderItemsToInsert.find(oi => oi.productId === item.productId && oi.variantName === item.variantName)?.price || 0
+        }));
+
+        // Send email (don't await to avoid blocking response)
+        EmailUtil.sendOrderConfirmationEmail(
+          user.email,
+          user.fullName || 'Valued Customer',
+          order?.id || '',
+          order?.totalAmount || '0',
+          shippingAddress,
+          emailItems
+        ).catch(console.error);
+      }
+    } catch (error) {
+      console.error('Failed to trigger order confirmation email:', error);
+    }
 
     return order;
   }
