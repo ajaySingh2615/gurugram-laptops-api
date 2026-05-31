@@ -51,7 +51,8 @@ export class OrderRepository {
           with: {
             product: true
           }
-        }
+        },
+        user: true
       },
       orderBy: [desc(orders.createdAt)]
     });
