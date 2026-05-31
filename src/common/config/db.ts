@@ -7,6 +7,7 @@ import * as categoriesSchema from '../../modules/categories/category.model.js';
 import * as productsSchema from '../../modules/products/product.model.js';
 import * as cartsSchema from '../../modules/cart/cart.model.js';
 import * as ordersSchema from '../../modules/orders/order.model.js';
+import * as addressesSchema from '../../modules/addresses/address.model.js';
 
 // We use a Connection Pool so multiple requests don't block each other
 const pool = new pg.Pool({
@@ -19,6 +20,7 @@ const schema = {
   ...productsSchema,
   ...cartsSchema,
   ...ordersSchema,
+  ...addressesSchema,
 };
 
 // This `db` object is what we will import in our Services to write queries!

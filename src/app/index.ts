@@ -12,6 +12,7 @@ import { uploadRoutes } from '../modules/upload/upload.routes.js';
 import { categoryRoutes } from '../modules/categories/category.routes.js';
 import { cartRoutes } from '../modules/cart/cart.routes.js';
 import { orderRoutes } from '../modules/orders/order.routes.js';
+import { addressRoutes } from '../modules/addresses/address.routes.js';
 
 export const buildApp = (): Application => {
   const app = express();
@@ -35,6 +36,7 @@ export const buildApp = (): Application => {
   app.use('/api/v1/categories', categoryRoutes);
   app.use('/api/v1/cart', cartRoutes);
   app.use('/api/v1/orders', orderRoutes);
+  app.use('/api/v1/addresses', addressRoutes);
 
   app.use((req, res, next) => {
     next(ApiError.notFound(`Route not found: ${req.originalUrl}`));
