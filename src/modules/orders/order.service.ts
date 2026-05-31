@@ -2,6 +2,7 @@ import { orderRepository } from './order.repository.js';
 import { cartRepository } from '../cart/cart.repository.js';
 import { UserRepository } from '../auth/user.repository.js';
 import { EmailUtil } from '../../common/utils/email.util.js';
+import { PdfUtil } from '../../common/utils/pdf.util.js';
 import { ApiError } from '../../common/exceptions/api-error.js';
 
 export class OrderService {
@@ -61,6 +62,15 @@ export class OrderService {
           price: orderItemsToInsert.find(oi => oi.productId === item.productId && oi.variantName === item.variantName)?.price || 0
         }));
 
+        // Generate PDF Invoice
+        const pdfBuffer = await PdfUtil.generateOrderInvoice(
+          user.fullName || 'Valued Customer',
+          order?.id || '',
+          order?.totalAmount || '0',
+          shippingAddress,
+          emailItems
+        );
+
         // Send email (don't await to avoid blocking response)
         EmailUtil.sendOrderConfirmationEmail(
           user.email,
@@ -68,7 +78,8 @@ export class OrderService {
           order?.id || '',
           order?.totalAmount || '0',
           shippingAddress,
-          emailItems
+          emailItems,
+          pdfBuffer
         ).catch(console.error);
       }
     } catch (error) {

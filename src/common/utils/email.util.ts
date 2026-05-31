@@ -50,7 +50,8 @@ export class EmailUtil {
     orderId: string,
     totalAmount: string,
     shippingAddress: any,
-    items: any[]
+    items: any[],
+    pdfBuffer?: Buffer
   ) {
     const formatInr = (amount: number) => {
       return new Intl.NumberFormat("en-IN", {
@@ -62,80 +63,40 @@ export class EmailUtil {
 
     const shortOrderId = orderId?.split('-')[0]?.toUpperCase() || 'UNKNOWN';
 
-    const itemsHtml = items.map(item => `
-      <tr>
-        <td style="padding: 12px; border-bottom: 1px solid #eee;">
-          <div style="font-weight: bold; color: #333;">${item.productName}</div>
-          ${item.variantName ? `<div style="font-size: 12px; color: #666;">Variant: ${item.variantName}</div>` : ''}
-        </td>
-        <td style="padding: 12px; border-bottom: 1px solid #eee; text-align: center;">${item.quantity}</td>
-        <td style="padding: 12px; border-bottom: 1px solid #eee; text-align: right;">${formatInr(Number(item.price))}</td>
-        <td style="padding: 12px; border-bottom: 1px solid #eee; text-align: right; font-weight: bold;">${formatInr(Number(item.price) * item.quantity)}</td>
-      </tr>
-    `).join('');
-
     const html = `
-      <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; color: #333;">
+      <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 40px 20px; color: #333; line-height: 1.6;">
         <div style="text-align: center; margin-bottom: 30px;">
-          <h1 style="color: #10b981; margin-bottom: 5px;">Order Confirmed!</h1>
-          <p style="color: #666; font-size: 16px;">Thank you for your purchase, ${customerName}.</p>
+          <h1 style="color: #10b981; margin-bottom: 10px; font-size: 28px;">Thank You For Your Order!</h1>
+          <p style="color: #666; font-size: 16px;">Hi ${customerName}, we successfully received your order <strong>#${shortOrderId}</strong>.</p>
         </div>
 
-        <div style="background-color: #f8fafc; border-radius: 8px; padding: 20px; margin-bottom: 30px;">
-          <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
-            <div>
-              <div style="font-size: 12px; color: #666; text-transform: uppercase; letter-spacing: 1px;">Order ID</div>
-              <div style="font-weight: bold; font-size: 16px;">#${shortOrderId}</div>
-            </div>
-            <div style="text-align: right;">
-              <div style="font-size: 12px; color: #666; text-transform: uppercase; letter-spacing: 1px;">Total Amount</div>
-              <div style="font-weight: bold; font-size: 16px; color: #10b981;">${formatInr(Number(totalAmount))}</div>
-            </div>
-          </div>
+        <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 30px; margin-bottom: 30px; text-align: center;">
+          <p style="font-size: 16px; margin-bottom: 15px;">Your complete order details, billing information, and a full itemized receipt have been securely attached to this email as a PDF document.</p>
+          <p style="font-size: 16px; margin: 0; color: #10b981; font-weight: bold;">Please download the attached PDF to view your official invoice.</p>
         </div>
 
-        <h3 style="margin-bottom: 15px; border-bottom: 2px solid #f1f5f9; padding-bottom: 10px;">Order Summary</h3>
-        <table style="width: 100%; border-collapse: collapse; margin-bottom: 30px;">
-          <thead>
-            <tr style="background-color: #f8fafc;">
-              <th style="padding: 10px; text-align: left; font-size: 13px; color: #666;">Item</th>
-              <th style="padding: 10px; text-align: center; font-size: 13px; color: #666;">Qty</th>
-              <th style="padding: 10px; text-align: right; font-size: 13px; color: #666;">Price</th>
-              <th style="padding: 10px; text-align: right; font-size: 13px; color: #666;">Total</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${itemsHtml}
-          </tbody>
-          <tfoot>
-            <tr>
-              <td colspan="3" style="padding: 15px 12px; text-align: right; font-weight: bold;">Grand Total:</td>
-              <td style="padding: 15px 12px; text-align: right; font-weight: bold; font-size: 18px; color: #10b981;">${formatInr(Number(totalAmount))}</td>
-            </tr>
-          </tfoot>
-        </table>
-
-        <h3 style="margin-bottom: 15px; border-bottom: 2px solid #f1f5f9; padding-bottom: 10px;">Shipping Details</h3>
-        <div style="background-color: #f8fafc; border-radius: 8px; padding: 20px;">
-          <p style="margin: 0 0 5px 0; font-weight: bold;">${shippingAddress.fullName}</p>
-          <p style="margin: 0 0 5px 0; color: #666;">${shippingAddress.address}</p>
-          <p style="margin: 0 0 5px 0; color: #666;">${shippingAddress.city}, ${shippingAddress.state} ${shippingAddress.zipCode}</p>
-          <p style="margin: 0; color: #666;">Phone: ${shippingAddress.phone}</p>
-        </div>
-
-        <div style="text-align: center; margin-top: 40px; color: #999; font-size: 12px;">
-          <p>We'll send you another email when your order ships.</p>
+        <p style="font-size: 15px;">We will send you another update as soon as your package ships. If you have any questions or need to make changes to your order, please don't hesitate to reply to this email.</p>
+        
+        <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #eee; color: #999; font-size: 12px; text-align: center;">
+          <p>TechReborn &bull; 123 Tech Lane &bull; San Francisco, CA 94107</p>
           <p>&copy; ${new Date().getFullYear()} TechReborn. All rights reserved.</p>
         </div>
       </div>
     `;
 
     try {
+      const attachments = pdfBuffer ? [{
+        filename: `Invoice_#${shortOrderId}.pdf`,
+        content: pdfBuffer,
+        contentType: 'application/pdf'
+      }] : undefined;
+
       await transporter.sendMail({
         from: 'TechReborn <onboarding@resend.dev>', // MUST use this on free tier
         to,
         subject: `Order Confirmation - #${shortOrderId}`,
         html,
+        attachments,
       });
     } catch (error) {
       console.error("Failed to send order confirmation email:", error);
