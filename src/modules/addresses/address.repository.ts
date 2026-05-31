@@ -19,6 +19,14 @@ export class AddressRepository {
     return address;
   }
 
+  async getAddressByLabel(userId: string, label: string) {
+    const [address] = await db
+      .select()
+      .from(addresses)
+      .where(and(eq(addresses.userId, userId), eq(addresses.label, label)));
+    return address;
+  }
+
   async createAddress(
     userId: string,
     data: {

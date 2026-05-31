@@ -19,6 +19,13 @@ export class AddressService {
       isDefault?: boolean;
     }
   ) {
+    if (data.label) {
+      const existingWithLabel = await addressRepository.getAddressByLabel(userId, data.label);
+      if (existingWithLabel) {
+        throw ApiError.badRequest(`You already have an address saved as ${data.label}. Please use a different label.`);
+      }
+    }
+
     return await addressRepository.createAddress(userId, data);
   }
 
@@ -40,6 +47,14 @@ export class AddressService {
     if (!existing) {
       throw ApiError.notFound('Address not found');
     }
+
+    if (data.label && data.label !== existing.label) {
+      const existingWithLabel = await addressRepository.getAddressByLabel(userId, data.label);
+      if (existingWithLabel) {
+        throw ApiError.badRequest(`You already have an address saved as ${data.label}. Please use a different label.`);
+      }
+    }
+
     return await addressRepository.updateAddress(addressId, userId, data);
   }
 
