@@ -21,12 +21,20 @@ import { verifyGoogleIdToken } from "./googleAuth.service.js";
 import { sendOtpSms, isTwilioConfigured } from "./twilio.service.js";
 
 const COOKIE_REFRESH = "refreshToken";
+const COOKIE_ACCESS = "accessToken";
 const COOKIE_OPTIONS = {
   httpOnly: true,
   secure: env.NODE_ENV === "production",
   sameSite: "lax" as const,
   path: "/api/auth",
   maxAge: 7 * 24 * 60 * 60 * 1000,
+};
+const COOKIE_ACCESS_OPTIONS = {
+  httpOnly: true,
+  secure: env.NODE_ENV === "production",
+  sameSite: "lax" as const,
+  path: "/",
+  maxAge: 15 * 60 * 1000,
 };
 
 export async function register(req: Request, res: Response): Promise<void> {
@@ -49,6 +57,7 @@ export async function register(req: Request, res: Response): Promise<void> {
     req.get("User-Agent") ?? undefined,
   );
 
+  res.cookie(COOKIE_ACCESS, accessToken, COOKIE_ACCESS_OPTIONS);
   res.cookie(COOKIE_REFRESH, refreshToken, COOKIE_OPTIONS);
   res.status(201).json({
     success: true,
@@ -77,6 +86,7 @@ export async function login(req: Request, res: Response): Promise<void> {
     req.get("User-Agent") ?? undefined,
   );
 
+  res.cookie(COOKIE_ACCESS, accessToken, COOKIE_ACCESS_OPTIONS);
   res.cookie(COOKIE_REFRESH, refreshToken, COOKIE_OPTIONS);
   res.status(200).json({
     success: true,
@@ -89,6 +99,7 @@ export async function login(req: Request, res: Response): Promise<void> {
 export async function logout(req: Request, res: Response): Promise<void> {
   const token = req.cookies?.[COOKIE_REFRESH] ?? req.body?.refreshToken;
   if (token) await tokenService.revokeRefreshToken(token);
+  res.clearCookie(COOKIE_ACCESS);
   res.clearCookie(COOKIE_REFRESH);
   res.status(200).json({
     success: true,
@@ -112,6 +123,7 @@ export async function refresh(req: Request, res: Response): Promise<void> {
   if (!user) throw new ApiError(401, "User not found");
 
   const accessToken = tokenService.issueAccessToken(user.id, user.email ?? user.phone ?? user.id);
+  res.cookie(COOKIE_ACCESS, accessToken, COOKIE_ACCESS_OPTIONS);
   res.cookie(COOKIE_REFRESH, result.newRefreshToken, COOKIE_OPTIONS);
   res.status(200).json({
     success: true,
@@ -291,6 +303,7 @@ export async function googleAuth(req: Request, res: Response): Promise<void> {
     req.get("User-Agent") ?? undefined,
   );
 
+  res.cookie(COOKIE_ACCESS, accessToken, COOKIE_ACCESS_OPTIONS);
   res.cookie(COOKIE_REFRESH, refreshToken, COOKIE_OPTIONS);
   res.status(200).json({
     success: true,
@@ -361,6 +374,7 @@ export async function verifyOtp(req: Request, res: Response): Promise<void> {
     req.get("User-Agent") ?? undefined,
   );
 
+  res.cookie(COOKIE_ACCESS, accessToken, COOKIE_ACCESS_OPTIONS);
   res.cookie(COOKIE_REFRESH, refreshToken, COOKIE_OPTIONS);
   res.status(200).json({
     success: true,

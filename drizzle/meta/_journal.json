@@ -5,36 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1771267860365,
-      "tag": "0000_lucky_hellcat",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1771268000000,
-      "tag": "0001_rename_password_hash",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1739790400000,
-      "tag": "0002_add_users_phone",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1739876800000,
-      "tag": "0003_make_email_nullable",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "7",
-      "when": 1739963200000,
-      "tag": "0004_add_all_modules",
+      "when": 1781286729732,
+      "tag": "0000_premium_stranger",
       "breakpoints": true
     }
   ]

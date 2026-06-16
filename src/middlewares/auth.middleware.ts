@@ -20,7 +20,7 @@ export function requireAuth(
   const authHeader = req.headers.authorization;
   const token = authHeader?.startsWith("Bearer ")
     ? authHeader.slice(7)
-    : (req.headers.authorization as string | undefined);
+    : (req.headers.authorization as string | undefined) || req.cookies?.accessToken;
 
   if (!token) {
     next(new ApiError(401, "Unauthorized", ["Missing or invalid token"]));
